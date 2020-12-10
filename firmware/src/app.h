@@ -32,6 +32,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "configuration.h"
+#include "definitions.h"
 
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
@@ -58,12 +59,19 @@ extern "C" {
     determine the behavior of the application at various times.
 */
 
-typedef enum
-{
+typedef enum {
     /* Application's state machine's initial state. */
-    APP_STATE_INIT=0,
-    APP_STATE_SERVICE_TASKS,
+    APP_STATE_INIT = 0,
+
     /* TODO: Define states used by the application state machine. */
+    APP_STATE_DETECT_DEVICE,
+    APP_STATE_DETECT_BUTTON,
+    APP_STATE_CHECK_LOCK_STATUS,
+    APP_STATE_WRITE_CONFIG_ZONE,
+    APP_STATE_LOCK_CONFIG_ZONE,
+    APP_STATE_WRITE_DATA_ZONE,
+    APP_STATE_LOCK_DATA_ZONE,
+    APP_STATE_NONCE,
 
 } APP_STATES;
 
@@ -87,6 +95,7 @@ typedef struct
     APP_STATES state;
 
     /* TODO: Define any additional data used by the application. */
+    //ATCADevice device;
 
 } APP_DATA;
 

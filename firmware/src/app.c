@@ -28,12 +28,20 @@
 // *****************************************************************************
 
 #include "app.h"
+#include "cryptoauthlib.h"
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: Global Data Definitions
 // *****************************************************************************
 // *****************************************************************************
+// Macro for checking CryptoAuthLib API return
+#define CHECK_STATUS(s)                                         \
+    if (s != ATCA_SUCCESS)                                      \
+    {                                                           \
+        printf("Error: Line %d in %s\r\n", __LINE__, __FILE__); \
+        return;                                                 \
+    }
 
 // *****************************************************************************
 /* Application Data
@@ -51,6 +59,10 @@
 */
 
 APP_DATA appData;
+ATCADevice atca_device;
+//SYS_TIME_HANDLE timer;
+
+extern ATCAIfaceCfg atsha204a_0_init_data;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -122,12 +134,12 @@ void APP_Tasks ( void )
             if (appInitialized)
             {
 
-                appData.state = APP_STATE_SERVICE_TASKS;
+                appData.state = APP_STATE_DETECT_DEVICE;
             }
             break;
         }
 
-        case APP_STATE_SERVICE_TASKS:
+        case APP_STATE_DETECT_DEVICE:
         {
 
             break;
