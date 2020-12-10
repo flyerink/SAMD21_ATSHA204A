@@ -56,9 +56,31 @@ int _mon_getc (int canblock)
 void _mon_putc (char c)
 {
     uint8_t size = 0;
-    do
+
+    if (c == '\n')
     {
-        size = SERCOM3_USART_Write ((void *)&c, 1);
+        c = '\r';
+        do
+        {
+            size = SERCOM3_USART_Write ((void *)&c, 1);
+        }
+        while (size != 1);
+
+        c = '\n';
+        do
+        {
+            size = SERCOM3_USART_Write ((void *)&c, 1);
+        }
+        while (size != 1);
     }
-    while (size != 1);
+    else
+    {
+        do
+        {
+            size = SERCOM3_USART_Write ((void *)&c, 1);
+        }
+        while (size != 1);
+    }
+
+
 }

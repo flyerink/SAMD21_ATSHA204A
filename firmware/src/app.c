@@ -121,6 +121,8 @@ void APP_Initialize ( void )
 
 void APP_Tasks ( void )
 {
+    ATCA_STATUS status;
+
     if (SYS_TIME_DelayIsComplete (timer))
     {
         LED_Toggle();
@@ -133,25 +135,85 @@ void APP_Tasks ( void )
         /* Application's initial state. */
         case APP_STATE_INIT:
         {
-            bool appInitialized = true;
+            printf ("\nInitial CryptoAuthLib:\n");
 
+            // Inititalize CryptoAuthLib
+            status = atcab_init_ext (&atca_device, &atsha204a_0_init_data);
+            CHECK_STATUS (status);
 
-            if (appInitialized)
+            if (atcab_get_device_type_ext (atca_device) == ATSHA204A)
             {
+                uint8_t revision[9];
+                status = calib_info (atca_device, revision);
+                CHECK_STATUS (status);
+                atcab_printbin_label ("Device Revision:  ", revision, 4);
 
-                appData.state = APP_STATE_DETECT_DEVICE;
+                status = calib_read_serial_number (atca_device, revision);
+                CHECK_STATUS (status);
+                atcab_printbin_label ("Device Serial Number:  ", revision, 9);
+
+                appData.state = APP_STATE_DETECT_BUTTON;
             }
             break;
         }
 
-        case APP_STATE_DETECT_DEVICE:
+        case APP_STATE_DETECT_BUTTON:
         {
-
+            if (SWITCH_Get() == SWITCH_STATE_PRESSED)
+            {
+                appData.state = APP_STATE_CHECK_LOCK_STATUS;
+                while (SWITCH_Get() == SWITCH_STATE_PRESSED);
+            }
             break;
         }
 
-        /* TODO: implement your application state machine.*/
+        case APP_STATE_CHECK_LOCK_STATUS:
+        {
+            bool is_locked;
+            status = calib_is_locked (atca_device, LOCK_ZONE_CONFIG, &is_locked);
+            CHECK_STATUS (status);
+            if (is_locked)
+            {
+                printf ("\r\n    Config Zone is locked!");
 
+                status = calib_is_locked (atca_device, LOCK_ZONE_DATA, &is_locked);
+                CHECK_STATUS (status);
+                if (is_locked)
+                {
+                    printf ("\r\n    Data Zone is locked!");
+                    appData.state = APP_STATE_NONCE;
+                }
+                else
+                {
+                    printf ("\r\n    Data Zone is un-locked!");
+                    appData.state = APP_STATE_WRITE_DATA_ZONE;
+                }
+            }
+            else
+            {
+                printf ("\r\n    Config Zone is un-locked!");
+                appData.state = APP_STATE_WRITE_CONFIG_ZONE;
+            }
+            break;
+        }
+
+        case APP_STATE_WRITE_CONFIG_ZONE:
+        {
+            appData.state = APP_STATE_WRITE_DATA_ZONE;
+            break;
+        }
+
+        case APP_STATE_WRITE_DATA_ZONE:
+        {
+            appData.state = APP_STATE_NONCE;
+            break;
+        }
+
+        case APP_STATE_NONCE:
+        {
+            appData.state = APP_STATE_INIT;
+            break;
+        }
 
         /* The default state should never be executed. */
         default:
