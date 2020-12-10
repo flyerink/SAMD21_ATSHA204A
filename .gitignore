@@ -1,7 +1,6 @@
 build
 debug
 dist
-.generated_files
 
 *.dep
 *.org

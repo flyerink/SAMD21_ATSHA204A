@@ -94,7 +94,7 @@ void SERCOM5_Handler            ( void ) __attribute__((weak, alias("Dummy_Handl
 void TCC0_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 void TCC1_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 void TCC2_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
-void TC3_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
+void TC3_TimerInterruptHandler  ( void ) __attribute__((weak, alias("Dummy_Handler")));
 void TC4_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 void TC5_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 void TC6_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -141,7 +141,7 @@ const DeviceVectors exception_table=
     .pfnTCC0_Handler               = ( void * ) TCC0_Handler,
     .pfnTCC1_Handler               = ( void * ) TCC1_Handler,
     .pfnTCC2_Handler               = ( void * ) TCC2_Handler,
-    .pfnTC3_Handler                = ( void * ) TC3_Handler,
+    .pfnTC3_Handler                = ( void * ) TC3_TimerInterruptHandler,
     .pfnTC4_Handler                = ( void * ) TC4_Handler,
     .pfnTC5_Handler                = ( void * ) TC5_Handler,
     .pfnTC6_Handler                = ( void * ) TC6_Handler,

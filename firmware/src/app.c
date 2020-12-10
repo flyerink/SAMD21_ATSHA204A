@@ -60,7 +60,7 @@
 
 APP_DATA appData;
 ATCADevice atca_device;
-//SYS_TIME_HANDLE timer;
+SYS_TIME_HANDLE timer;
 
 extern ATCAIfaceCfg atsha204a_0_init_data;
 
@@ -103,11 +103,11 @@ void APP_Initialize ( void )
     /* Place the App state machine in its initial state. */
     appData.state = APP_STATE_INIT;
 
-
-
     /* TODO: Initialize your application's state machine and other
      * parameters.
      */
+    timer = SYS_TIME_HANDLE_INVALID;
+    SYS_TIME_DelayMS (1000, &timer);
 }
 
 
@@ -121,6 +121,11 @@ void APP_Initialize ( void )
 
 void APP_Tasks ( void )
 {
+    if (SYS_TIME_DelayIsComplete (timer))
+    {
+        LED_Toggle();
+        SYS_TIME_DelayMS (1000, &timer);
+    }
 
     /* Check the application's current state. */
     switch ( appData.state )
