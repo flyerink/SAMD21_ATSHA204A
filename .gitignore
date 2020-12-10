@@ -1,8 +1,7 @@
-*.IAR/settings
-*.IAR/Debug
-*.IAR/Release
-
-default.IAR/SAMD21_RTT.dep
+build
+debug
+dist
+.generated_files
 
 *.dep
 *.org
