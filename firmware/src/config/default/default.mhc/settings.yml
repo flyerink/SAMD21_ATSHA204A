@@ -1,0 +1,14 @@
+configName: default
+folderName: SAMD21_ATSHA204A
+format_version: v1.0
+frameworkPath: ..\..\..\..\Users\A19582\Harmony3
+processor: ATSAMD21J18A
+projectName: SAMD21_ATSHA204A
+settings:
+  PackageFilter: audio;aws_cloud;bsp;classb_sam_e5x_d5x;core;crypto;cryptoauthlib;cryptoauthlib_apps;csp;ethercat;expresslogic_threadx;gfx;gfx_apps;micrium_ucos3;net;quick_docs;touch;usb;wireless;x2c;
+  FORCE_OPTIMIZATION: 'false'
+  GENERATE_BACKUP: 'true'
+  TRUSTZONE: 'false'
+  CMSISPath: .\dev_packs\arm\CMSIS\5.7.0
+  MERGE_STRATEGY: USER_ALL
+  DFPPath: .\dev_packs\Microchip\SAMD21_DFP\3.4.104\samd21a\atdf\ATSAMD21J18A.atdf

@@ -1,0 +1,21 @@
+{
+    "astyle.additional_languages": [
+        "c",
+        "cpp",
+    ],
+
+    "astyle.cmd_options": [
+        "--style=allman",//Kernighan&Ritchie 风格格式和缩进
+        //"--style=linux",//linux风格格式和缩进
+        "--indent=spaces=4",//缩进4个空格
+        "--convert-tabs",
+        "--align-pointer=name",
+        "--align-reference=name",
+        "--keep-one-line-statements",
+        "--pad-header",
+        "--pad-oper", //操作符两端插入一个空格
+        "--pad-first-paren-out", 
+        //"--indent-cases",
+        "--indent-switches",
+    ]
+}

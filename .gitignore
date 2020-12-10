@@ -1,0 +1,15 @@
+*.IAR/settings
+*.IAR/Debug
+*.IAR/Release
+
+default.IAR/SAMD21_RTT.dep
+
+*.dep
+*.org
+*.hex
+*.obj
+*.map
+*.elf
+*.bin
+*.o
+*.j

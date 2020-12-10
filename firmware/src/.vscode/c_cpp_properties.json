@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "XC32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Program Files/Microchip/xc32/v2.50/pic32c/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "__INT8_T_TYPE__",
+                "__INT16_T_TYPE__",
+                "__INT32_T_TYPE__"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "C:/Program Files/Microchip/xc32/v2.50/bin/bin/pic32c-gcc.exe",
+            "cStandard": "c99",
+            "cppStandard": "gnu++11"
+        }
+    ],
+    "version": 4
+}
