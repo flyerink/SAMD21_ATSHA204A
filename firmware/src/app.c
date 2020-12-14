@@ -36,11 +36,10 @@
 // *****************************************************************************
 // *****************************************************************************
 // Macro for checking CryptoAuthLib API return
-#define CHECK_STATUS(s)                                         \
-    if (s != ATCA_SUCCESS)                                      \
-    {                                                           \
-        printf("Error: Line %d in %s\r\n", __LINE__, __FILE__); \
-        return;                                               \
+#define CHECK_STATUS(s)                                             \
+    if (s != ATCA_SUCCESS)                                          \
+    {                                                               \
+        printf("Error: Line %d in %s\r\n", __LINE__, __FILE__);     \
     }
 
 // *****************************************************************************
@@ -104,13 +103,13 @@ void sha204_write_config (ATCADevice device, uint8_t addr)
     status = calib_write_config_zone (device, sha204_config_lab);
     CHECK_STATUS (status);
 
-    //status = atcab_lock_config_zone();
-    //CHECK_STATUS (status);
+    status = calib_lock_config_zone (device);
+    CHECK_STATUS (status);
 
     printf ("Write Complete\r\n");
 }
 
-void write_data (void)
+void sha204_write_data (ATCADevice device)
 {
     const uint8_t key0[] =
     {
@@ -122,13 +121,13 @@ void write_data (void)
 
     printf ("--Write Data Zone--\r\n");
 
-    status = atcab_write_bytes_zone (ATCA_ZONE_DATA, 0, 0, key0, 32);
+    status = calib_write_bytes_zone (device, ATCA_ZONE_DATA, 0, 0, key0, 32);
     CHECK_STATUS (status);
 
     printf ("Write Complete\r\n");
 
     printf ("Locking Data Zone\r\n");
-    status = atcab_lock_data_zone();
+    status = calib_lock_data_zone (device);
     CHECK_STATUS (status);
 
     printf ("Complete\r\n");
@@ -199,9 +198,9 @@ void APP_Tasks ( void )
                 if (atcab_get_device_type_ext (atca_device) == ATSHA204A)
                 {
                     uint8_t revision[9];
-                    status = calib_info (atca_device, revision);
-                    CHECK_STATUS (status);
-                    atcab_printbin_label ("Device Revision:  ", revision, 4);
+                    // status = calib_info (atca_device, revision);
+                    // CHECK_STATUS (status);
+                    // atcab_printbin_label ("Device Revision:  ", revision, 4);
 
                     status = calib_read_serial_number (atca_device, revision);
                     CHECK_STATUS (status);
@@ -262,13 +261,19 @@ void APP_Tasks ( void )
 
             case APP_STATE_WRITE_DATA_ZONE:
             {
+                sha204_write_data (atca_device);
                 appData.state = APP_STATE_NONCE;
                 break;
             }
 
             case APP_STATE_NONCE:
             {
-                appData.state = APP_STATE_INIT;
+                uint8_t num_in[32];
+                uint8_t random[32];
+                status = calib_nonce_rand (atca_device, num_in, random);
+                CHECK_STATUS (status);
+                atcab_printbin_label ("\nNonce Number:  \n", random, 32);
+                appData.state = APP_STATE_DETECT_BUTTON;
                 break;
             }
 

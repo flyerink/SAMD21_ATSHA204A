@@ -677,7 +677,7 @@ files:
   physicalPath: library\cryptoauthlib\hal
   security: NON_SECURE
   type: SOURCE
-  userChecksum: A0B02226E8192C9003F47508C980A3FB
+  userChecksum: 97AC9CA3500E21DACEA442F2CC89FC69
 - generatedChecksum: 4AFF92D86DE22FD37078C23B08BB9CF0
   logicalPath: config\default
   name: initialization.c
@@ -741,13 +741,13 @@ files:
   security: NON_SECURE
   type: SOURCE
   userChecksum: B92BC1B3F44DF3D4C714146B874C6378
-- generatedChecksum: 0181DF881D59D3BB5E4745E27365327B
+- generatedChecksum: B89AA6F7E56ECE1C8BE6176B5A0DB8EA
   logicalPath: config\default\peripheral\sercom\i2c_master
   name: plib_sercom2_i2c_master.c
   physicalPath: peripheral\sercom\i2c_master
   security: NON_SECURE
   type: SOURCE
-  userChecksum: 0181DF881D59D3BB5E4745E27365327B
+  userChecksum: B89AA6F7E56ECE1C8BE6176B5A0DB8EA
 - generatedChecksum: 098A82C7B44DE869011B10DCCD97BEA8
   logicalPath: config\default\peripheral\sercom\usart
   name: plib_sercom3_usart.c
@@ -873,7 +873,7 @@ files:
   physicalPath: stdio
   security: NON_SECURE
   type: SOURCE
-  userChecksum: 78DE9319870227DC2FF47B9428D45405
+  userChecksum: E1E97CAFCD6AA063B7CA9480529FD136
 - generatedChecksum: E83A2568EB70A3E393A9421C4CEDDDD5
   logicalPath: packs\ATSAMD21J18A_DFP\component
   name: ac.h
@@ -1391,7 +1391,7 @@ settings:
   delimiter: ''
   key: heap-size
   security: NON_SECURE
-  value: '512'
+  value: '2048'
 - append: false
   category: C32-LD
   delimiter: ''

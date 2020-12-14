@@ -3,4 +3,4 @@ type: UniqueComponent
 attributes: {id: BSP_SAM_D21_Xplained_Pro, bsp: 'true'}
 children:
 - type: ElementPosition
-  attributes: {x: '577', y: '57', id: BSP_SAM_D21_Xplained_Pro}
+  attributes: {x: '578', y: '57', id: BSP_SAM_D21_Xplained_Pro}

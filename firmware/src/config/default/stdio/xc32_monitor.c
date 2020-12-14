@@ -81,6 +81,4 @@ void _mon_putc (char c)
         }
         while (size != 1);
     }
-
-
 }

@@ -15,7 +15,7 @@ ATCAIfaceCfg atsha204a_0_init_data = {
     .atcai2c.slave_address = 0xC8,
     .atcai2c.bus           = 0,
     .atcai2c.baud          = 400000,
-    .wake_delay            = 1500,
+    .wake_delay            = 1000,
     .rx_retries            = 20,
     .cfg_data              = &sercom2_plib_i2c_api
 };
