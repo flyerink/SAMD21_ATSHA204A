@@ -231,6 +231,34 @@ children:
       - type: Dynamic
         attributes: {id: core, value: 'false'}
   - type: Boolean
+    attributes: {id: GCLK_ID_20_CHEN}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: Integer
+    attributes: {id: GCLK_ID_20_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
+    attributes: {id: GCLK_ID_21_CHEN}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: Integer
+    attributes: {id: GCLK_ID_21_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
     attributes: {id: GCLK_ID_22_CHEN}
     children:
     - type: Values
@@ -336,6 +364,27 @@ children:
       - type: Dynamic
         attributes: {id: core, value: '0x1200'}
   - type: Boolean
+    attributes: {id: NVIC_10_0_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: String
+    attributes: {id: NVIC_10_0_HANDLER}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: SERCOM1_Handler}
+  - type: Boolean
+    attributes: {id: NVIC_10_0_HANDLER_LOCK}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: Boolean
     attributes: {id: NVIC_11_0_ENABLE}
     children:
     - type: Values
@@ -398,6 +447,27 @@ children:
       children:
       - type: Dynamic
         attributes: {id: core, value: 'true'}
+  - type: Boolean
+    attributes: {id: NVIC_9_0_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: String
+    attributes: {id: NVIC_9_0_HANDLER}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: SERCOM0_Handler}
+  - type: Boolean
+    attributes: {id: NVIC_9_0_HANDLER_LOCK}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
   - type: Integer
     attributes: {id: OSC8M_CLOCK_FREQ}
     children:
@@ -692,6 +762,34 @@ children:
       children:
       - type: Dynamic
         attributes: {id: core, value: PORT}
+  - type: Integer
+    attributes: {id: SERCOM0_CORE_CLOCK_FREQUENCY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
+    attributes: {id: SERCOM0_INTERRUPT_ENABLE_UPDATE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'true'}
+  - type: Integer
+    attributes: {id: SERCOM1_CORE_CLOCK_FREQUENCY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
+    attributes: {id: SERCOM1_INTERRUPT_ENABLE_UPDATE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'true'}
   - type: Boolean
     attributes: {id: SERCOM2_CORE_CLOCK_ENABLE}
     children:

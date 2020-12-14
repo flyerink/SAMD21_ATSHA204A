@@ -4,10 +4,10 @@
 
 
 project: SAMD21_ATSHA204A
-creation_date: 2020-12-14T12:58:49.727+08:00[Asia/Shanghai]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
+creation_date: 2020-12-14T14:26:08.197+08:00[Asia/Shanghai]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
 operating_system: Windows 10
 mhc_mode: IDE            # [IDE|Standalone|Headless]
-mhc_version: v3.6.2
+mhc_version: v3.6.4
 mplabx_version: v5.45        # if MPLAB X plugin only
 plugin_version: v3.6.2        # if MPLAB X plugin only
 compiler: XC32 (2.50)

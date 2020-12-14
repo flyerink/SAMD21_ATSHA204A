@@ -40,6 +40,7 @@
     if (s != ATCA_SUCCESS)                                          \
     {                                                               \
         printf("Error: Line %d in %s\r\n", __LINE__, __FILE__);     \
+        return s;                                                   \
     }
 
 // *****************************************************************************
@@ -80,14 +81,13 @@ extern ATCAIfaceCfg atsha204a_0_init_data;
 
 /* TODO:  Add any necessary local functions.
 */
-void sha204_write_config (ATCADevice device, uint8_t addr)
+ATCA_STATUS sha204_write_config (ATCADevice device, uint8_t addr)
 {
     ATCA_STATUS status = ATCA_SUCCESS;
     uint8_t data[88];
 
     //generated C HEX from javascript config tool
-    const uint8_t sha204_config_lab[] =
-    {
+    const uint8_t sha204_config_lab[] = {
         0x01, 0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00, 0xEE, 0x00, 0x69, 0x00,
         addr, 0x00, 0x55, 0x00, 0x80, 0x80, 0x90, 0x80,  0x8F, 0x8F, 0x8F, 0x42, 0x8F, 0x0F, 0xC2, 0x8F,
         0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F,  0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F,
@@ -107,17 +107,16 @@ void sha204_write_config (ATCADevice device, uint8_t addr)
     CHECK_STATUS (status);
 
     printf ("Write Complete\r\n");
+    return ATCA_SUCCESS;
 }
 
-void sha204_write_data (ATCADevice device)
+ATCA_STATUS sha204_write_data (ATCADevice device)
 {
-    const uint8_t key0[] =
-    {
+    ATCA_STATUS status = ATCA_GEN_FAIL;
+    const uint8_t key0[] = {
         0xd9, 0x01, 0x01, 0x01, 0x00, 0x66, 0x6c, 0x6f, 0x77, 0x76, 0x69, 0x61, 0x63, 0x68, 0x61, 0x6e,
         0x67, 0x72, 0x75, 0x69, 0x6b, 0x65, 0x6a, 0x69, 0x77, 0x77, 0x77, 0x77, 0xab, 0xbc, 0xcd, 0xde,
     };
-
-    ATCA_STATUS status = ATCA_GEN_FAIL;
 
     printf ("--Write Data Zone--\r\n");
 
@@ -131,6 +130,7 @@ void sha204_write_data (ATCADevice device)
     CHECK_STATUS (status);
 
     printf ("Complete\r\n");
+    return ATCA_SUCCESS;
 }
 
 // *****************************************************************************
@@ -175,111 +175,103 @@ void APP_Tasks ( void )
 {
     ATCA_STATUS status;
 
-    if (SYS_TIME_DelayIsComplete (timer_led))
-    {
+    if (SYS_TIME_DelayIsComplete (timer_led)) {
         LED_Toggle();
         SYS_TIME_DelayMS (1000, &timer_led);
     }
 
-    if (SYS_TIME_DelayIsComplete (timer_tick))
-    {
+    if (SYS_TIME_DelayIsComplete (timer_tick)) {
         /* Check the application's current state. */
-        switch ( appData.state )
-        {
+        switch ( appData.state ) {
             /* Application's initial state. */
-            case APP_STATE_INIT:
-            {
+            case APP_STATE_INIT: {
                 printf ("\nInitial CryptoAuthLib:\n");
 
                 // Inititalize CryptoAuthLib
                 status = atcab_init_ext (&atca_device, &atsha204a_0_init_data);
-                CHECK_STATUS (status);
+                if (status != ATCA_SUCCESS) {
+                    printf ("\tFail\n");
+                    break;
+                }
 
-                if (atcab_get_device_type_ext (atca_device) == ATSHA204A)
-                {
+                if (atcab_get_device_type_ext (atca_device) == ATSHA204A) {
                     uint8_t revision[9];
-                    // status = calib_info (atca_device, revision);
-                    // CHECK_STATUS (status);
-                    // atcab_printbin_label ("Device Revision:  ", revision, 4);
 
                     status = calib_read_serial_number (atca_device, revision);
-                    CHECK_STATUS (status);
+                    if (status != ATCA_SUCCESS) {
+                        printf ("Device Serial Number: Fail\n");
+                        break;
+                    }
                     atcab_printbin_label ("Device Serial Number:  ", revision, 9);
-
                     appData.state = APP_STATE_DETECT_BUTTON;
                 }
                 break;
             }
 
-            case APP_STATE_DETECT_BUTTON:
-            {
-                if (SWITCH_Get() == SWITCH_STATE_PRESSED)
-                {
+            case APP_STATE_DETECT_BUTTON: {
+                if (SWITCH_Get() == SWITCH_STATE_PRESSED) {
                     appData.state = APP_STATE_CHECK_LOCK_STATUS;
                     while (SWITCH_Get() == SWITCH_STATE_PRESSED);
                 }
                 break;
             }
 
-            case APP_STATE_CHECK_LOCK_STATUS:
-            {
+            case APP_STATE_CHECK_LOCK_STATUS: {
                 bool is_locked;
                 status = calib_is_locked (atca_device, LOCK_ZONE_CONFIG, &is_locked);
-                CHECK_STATUS (status);
-                if (is_locked)
-                {
+                if (status != ATCA_SUCCESS) {
+                    printf ("Device lock status: Fail\n");
+                    break;
+                }
+                if (is_locked) {
                     printf ("Config Zone is locked!\r\n");
-
                     status = calib_is_locked (atca_device, LOCK_ZONE_DATA, &is_locked);
-                    CHECK_STATUS (status);
-                    if (is_locked)
-                    {
+                    if (status != ATCA_SUCCESS) {
+                        printf ("Device lock status: Fail\n");
+                        break;
+                    }
+
+                    if (is_locked) {
                         printf ("Data Zone is locked!\r\n");
                         appData.state = APP_STATE_NONCE;
-                    }
-                    else
-                    {
+                    } else {
                         printf ("Data Zone is un-locked!\r\n");
                         appData.state = APP_STATE_WRITE_DATA_ZONE;
                     }
-                }
-                else
-                {
+                } else {
                     printf ("Config Zone is un-locked!\r\n");
                     appData.state = APP_STATE_WRITE_CONFIG_ZONE;
                 }
                 break;
             }
 
-            case APP_STATE_WRITE_CONFIG_ZONE:
-            {
+            case APP_STATE_WRITE_CONFIG_ZONE: {
                 printf ("Write Config Zone\n");
                 sha204_write_config (atca_device, 0xC8);
                 appData.state = APP_STATE_WRITE_DATA_ZONE;
                 break;
             }
 
-            case APP_STATE_WRITE_DATA_ZONE:
-            {
+            case APP_STATE_WRITE_DATA_ZONE: {
                 sha204_write_data (atca_device);
                 appData.state = APP_STATE_NONCE;
                 break;
             }
 
-            case APP_STATE_NONCE:
-            {
-                uint8_t num_in[32];
+            case APP_STATE_NONCE: {
                 uint8_t random[32];
-                status = calib_nonce_rand (atca_device, num_in, random);
-                CHECK_STATUS (status);
-                atcab_printbin_label ("\nNonce Number:  \n", random, 32);
-                appData.state = APP_STATE_DETECT_BUTTON;
+                status = calib_random (atca_device, random);
+                if (status == ATCA_SUCCESS) {
+                    atcab_printbin_label ("\nRandom Number:  \n", random, 32);
+                    appData.state = APP_STATE_DETECT_BUTTON;
+                } else {
+                    printf ("\nRandom Number fail\n");
+                }
                 break;
             }
 
             /* The default state should never be executed. */
-            default:
-            {
+            default: {
                 /* TODO: Handle error in application's state machine. */
                 break;
             }

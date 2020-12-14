@@ -5,8 +5,8 @@
     ],
 
     "astyle.cmd_options": [
-        "--style=allman",//Kernighan&Ritchie 风格格式和缩进
-        //"--style=linux",//linux风格格式和缩进
+        //"--style=allman",//Kernighan&Ritchie 风格格式和缩进
+        "--style=linux",//linux风格格式和缩进
         "--indent=spaces=4",//缩进4个空格
         "--convert-tabs",
         "--align-pointer=name",

@@ -158,6 +158,7 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata,
         return ATCA_BAD_PARAM;
     }
 
+
     if (0xFF != word_address)
     {
         txdata[0] = word_address;   // insert the Word Address Value, Command token
@@ -174,14 +175,13 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata,
         if (plib->write(cfg->atcai2c.slave_address >> 1, txdata, txlength) == true)
         {
             /* Wait for the I2C transfer to complete */
-            status = hal_i2c_wait(plib, cfg->atcai2c.baud, txlength+4);
+            status = hal_i2c_wait(plib, cfg->atcai2c.baud, txlength);
 
             if (ATCA_SUCCESS == status)
             {
                 /* Transfer complete. Check if the transfer was successful */
                 if (plib->error_get() != PLIB_I2C_ERROR_NONE)
                 {
-                    //printf("Error:%d\n", plib->error_get());
                     status = ATCA_TRACE(ATCA_COMM_FAIL, "plib->write failed");
                 }
             }
@@ -385,7 +385,7 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
     retries = cfg->rx_retries;
 
     bdrt = cfg->atcai2c.baud;
-    if (bdrt > 100000)   // if not already at 100KHz, change it
+    if (bdrt != 100000)   // if not already at 100KHz, change it
     {
         status = change_i2c_speed(iface, 100000);
     }
@@ -430,7 +430,7 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
         if (ATCA_SUCCESS == status)
         {
             // if necessary, revert baud rate to what came in.
-            if (bdrt > 100000)
+            if (bdrt != 100000)
             {
                 status = change_i2c_speed(iface, bdrt);
             }

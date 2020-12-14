@@ -677,7 +677,7 @@ files:
   physicalPath: library\cryptoauthlib\hal
   security: NON_SECURE
   type: SOURCE
-  userChecksum: 97AC9CA3500E21DACEA442F2CC89FC69
+  userChecksum: A0B02226E8192C9003F47508C980A3FB
 - generatedChecksum: 4AFF92D86DE22FD37078C23B08BB9CF0
   logicalPath: config\default
   name: initialization.c
