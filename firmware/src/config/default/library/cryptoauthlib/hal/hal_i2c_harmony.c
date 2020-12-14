@@ -180,10 +180,10 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata,
             if (ATCA_SUCCESS == status)
             {
                 /* Transfer complete. Check if the transfer was successful */
-                if (plib->error_get() != PLIB_I2C_ERROR_NONE)
-                {
-                    status = ATCA_TRACE(ATCA_COMM_FAIL, "plib->write failed");
-                }
+                // if (plib->error_get() != PLIB_I2C_ERROR_NONE)
+                // {
+                //     status = ATCA_TRACE(ATCA_COMM_FAIL, "plib->write failed");
+                // }
             }
         }
     }
@@ -261,7 +261,7 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t word_address, uint8_t *rxda
         }
         if (ATCA_SUCCESS != status)
         {
-            ATCA_TRACE(status, "plib->read - failed");
+            //ATCA_TRACE(status, "plib->read - failed");
             break;
         }
 
