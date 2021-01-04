@@ -29,6 +29,7 @@
 
 #include "app.h"
 #include "cryptoauthlib.h"
+#include "atca_crypto_sw_sha2.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -81,6 +82,8 @@ extern ATCAIfaceCfg atsha204a_0_init_data;
 
 /* TODO:  Add any necessary local functions.
 */
+
+// 写入SHA204A的配置区数据，写入成功后需要把配置区锁定
 ATCA_STATUS sha204_write_config (ATCADevice device, uint8_t addr)
 {
     ATCA_STATUS status = ATCA_SUCCESS;
@@ -110,13 +113,31 @@ ATCA_STATUS sha204_write_config (ATCADevice device, uint8_t addr)
     return ATCA_SUCCESS;
 }
 
+// 用户的SecureKey, 和写入到SHA204A芯片中的密码一致。
+// 基于安全考虑，实际使用时需要对这个Key做一些处理，比如打散或用异或转化，使用时再组合恢复
+const uint8_t key0[32] = {
+    0xd9, 0x01, 0x01, 0x01, 0x00, 0x66, 0x6c, 0x6f, 0x77, 0x76, 0x69, 0x61, 0x63, 0x68, 0x61, 0x6e,
+    0x67, 0x72, 0x75, 0x69, 0x6b, 0x65, 0x6a, 0x69, 0x77, 0x77, 0x77, 0x77, 0xab, 0xbc, 0xcd, 0xde,
+};
+
+// 用户的自定义随机种子，用于通过Nonce生成随机数
+const uint8_t nonce_in[20] = {
+    0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22,
+    0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22
+};
+
+// 软件计算SHA256值时需要附加的参数
+const uint8_t mac_bytes[24] = {
+    0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xEE,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x23, 0x00, 0x00,
+};
+
+// 写入数据到SHA204A数据区，比如用户的密码
+// 写入数据后，需要把数据区锁定才能使用验证的功能
 ATCA_STATUS sha204_write_data (ATCADevice device)
 {
     ATCA_STATUS status = ATCA_GEN_FAIL;
-    const uint8_t key0[] = {
-        0xd9, 0x01, 0x01, 0x01, 0x00, 0x66, 0x6c, 0x6f, 0x77, 0x76, 0x69, 0x61, 0x63, 0x68, 0x61, 0x6e,
-        0x67, 0x72, 0x75, 0x69, 0x6b, 0x65, 0x6a, 0x69, 0x77, 0x77, 0x77, 0x77, 0xab, 0xbc, 0xcd, 0xde,
-    };
 
     printf ("--Write Data Zone--\r\n");
 
@@ -131,6 +152,55 @@ ATCA_STATUS sha204_write_data (ATCADevice device)
 
     printf ("Complete\r\n");
     return ATCA_SUCCESS;
+}
+
+// 验证芯片的MAC值和软件SHA256计算出的结果是否一致
+ATCA_STATUS sha204_checkmac (uint8_t *challenge)
+{
+    ATCA_STATUS status = ATCA_GEN_FAIL;
+    uint8_t digest[32];
+    uint8_t Tempkey[32];
+    uint8_t sha2_input[88];
+    uint8_t mac_sw[32];
+
+    // 获取器件的MAC值，使用Slot0的Key
+    status = calib_mac (atca_device, 0x01, 0x00, NULL, digest);
+    if (status == ATCA_SUCCESS)
+        atcab_printbin_label ("\nDigest:  \n", digest, 32);
+    else {
+        printf ("GetMac Fail\n");
+        return ATCA_FUNC_FAIL;
+    }
+
+    // 使用SHA256算法计算TempKey中的数据
+    memcpy (sha2_input, challenge, 32);
+    memcpy (sha2_input + 32, nonce_in, 20);
+    sha2_input[52] = 0x16;
+    sha2_input[53] = 0x01;
+    sha2_input[54] = 0x00;
+    status = atcac_sw_sha2_256 (sha2_input, 55, Tempkey);
+    if (status == ATCA_SUCCESS)
+        atcab_printbin_label ("\nTempKey:  \n", Tempkey, 32);
+
+    // 使用软件SHA256算法计算MAC值
+    memcpy (sha2_input, key0, 32);
+    memcpy (sha2_input + 32, Tempkey, 32);
+    memcpy (sha2_input + 64, mac_bytes, 24);
+    status = atcac_sw_sha2_256 (sha2_input, 88, mac_sw);
+    if (status == ATCA_SUCCESS)
+        atcab_printbin_label ("\nSW Digest:  \n", mac_sw, 32);
+    else {
+        printf ("Get SW Mac Fail\n");
+        return ATCA_FUNC_FAIL;
+    }
+
+    // 比较硬件和软件的结果是否一致，如果一致则证明外部的SHA204A是真正授权的
+    if (memcmp (mac_sw, digest, 32) == 0) {
+        printf ("CheckMac PASS\n");
+        return ATCA_SUCCESS;
+    }
+
+    return ATCA_FUNC_FAIL;
 }
 
 // *****************************************************************************
@@ -260,12 +330,17 @@ void APP_Tasks ( void )
 
             case APP_STATE_NONCE: {
                 uint8_t random[32];
-                status = calib_random (atca_device, random);
+                status = calib_nonce_base (atca_device, 0x01, 0x00, nonce_in, random);
                 if (status == ATCA_SUCCESS) {
                     atcab_printbin_label ("\nRandom Number:  \n", random, 32);
+                    status = sha204_checkmac (random);
+                    if (status == ATCA_SUCCESS)
+                        printf ("\nCheckMac Success\n");
+                    else
+                        printf ("\nCheckMac Fail\n");
                     appData.state = APP_STATE_DETECT_BUTTON;
                 } else {
-                    printf ("\nRandom Number fail\n");
+                    printf ("\nRandom Number Fail\n");
                 }
                 break;
             }

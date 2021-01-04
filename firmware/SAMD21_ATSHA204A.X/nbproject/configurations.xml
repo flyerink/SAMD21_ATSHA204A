@@ -373,8 +373,8 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMD21_DFP" vendor="Microchip" version="3.3.98"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMD21_DFP" vendor="Microchip" version="3.3.98"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -440,7 +440,7 @@
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
-        <property key="make-warnings-into-errors" value="true"/>
+        <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value="-O1"/>
         <property key="place-data-into-section" value="true"/>
         <property key="post-instruction-scheduling" value="default"/>
@@ -532,7 +532,7 @@
         <property key="exceptions" value="true"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/config/default;../src/packs/ATSAMD21J18A_DFP;../src/packs/CMSIS/CMSIS/Core/Include;../src/packs/CMSIS/;"/>
+                  value="../src;../src/config/default;../src/packs/ATSAMD21J18A_DFP;../src/packs/CMSIS/CMSIS/Core/Include;../src/packs/CMSIS/"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -592,8 +592,6 @@
         <property key="memories.programmemory.ranges" value="0-3ffff"/>
         <property key="memories.rww" value="true"/>
         <property key="poweroptions.powerenable" value="false"/>
-        <property key="programmerToGoFilePath"
-                  value="C:/Working/Projects/SAMD21/SAMD21_ATSHA204A/firmware/SAMD21_ATSHA204A.X/debug/default/SAMD21_ATSHA204A_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
