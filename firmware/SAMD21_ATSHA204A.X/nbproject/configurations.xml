@@ -328,6 +328,7 @@
       </logicalFolder>
       <itemPath>../src/main.c</itemPath>
       <itemPath>../src/app.c</itemPath>
+      <itemPath>../src/md5.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -500,7 +501,7 @@
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-cross-reference-file" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
-        <property key="heap-size" value="2048"/>
+        <property key="heap-size" value="4096"/>
         <property key="input-libraries" value=""/>
         <property key="kseg-length" value=""/>
         <property key="kseg-origin" value=""/>

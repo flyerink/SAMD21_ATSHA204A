@@ -30,6 +30,7 @@
 #include "app.h"
 #include "cryptoauthlib.h"
 #include "atca_crypto_sw_sha2.h"
+#include "md5.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -222,31 +223,88 @@ ATCA_STATUS sha204_checkmac (uint8_t *challenge)
     return ATCA_FUNC_FAIL;
 }
 
+MD5_CTX md5_ctx;
+uint8_t user_counter[4];
+uint8_t user_sn[8];
+
+
 ATCA_STATUS sha204_get_digest (void)
 {
+    // 软件计算SHA256值时需要附加的参数
+    const uint8_t mac_bytes[24] = {
+        0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xEE,
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x23, 0x00, 0x00,
+    };
+
     ATCA_STATUS status = ATCA_GEN_FAIL;
     uint8_t digest[32];
+    uint8_t mac_sw[32];
     uint8_t Tempkey[32];
-    uint8_t user_sn[8];
-    uint8_t user_counter[4];
+    uint8_t sha2_input[88];
+    uint8_t md5_result[16];
+    uint32_t counter;
 
+    // 读取用户的SN
     status = atcab_read_bytes_zone (ATCA_ZONE_DATA, 1, 0, Tempkey, 32);
     CHECK_STATUS (status);
     memcpy (user_sn, Tempkey, 8);
     atcab_printbin_label ("\nUser SN:  \n", user_sn, 8);
 
+    // 读取用户的Counter
     status = atcab_read_bytes_zone (ATCA_ZONE_DATA, 2, 0, Tempkey, 32);
     CHECK_STATUS (status);
     memcpy (user_counter, Tempkey, 4);
     atcab_printbin_label ("\nUser Counter:  \n", user_counter, 4);
 
-    memset (Tempkey, 0, 32);
-    memcpy (Tempkey, user_sn, 8);
-    memcpy (Tempkey + 8, user_counter, 4);
-    status = atcab_nonce_base (0x03, 0x00, Tempkey, NULL);
-    if (status == ATCA_SUCCESS) {
-        atcab_printbin_label ("\nNonce:  \n", digest, 32);
+    // 获取器件的MAC值，使用Slot0的Key和用户SN和Counter
+    status = atcab_mac (0x00, 0x00, Tempkey, digest);
+    if (status == ATCA_SUCCESS)
+        atcab_printbin_label ("\nSHA256 MAC Digest:  \n", digest, 32);
+    else {
+        printf ("GetMac Fail\n");
+        return ATCA_FUNC_FAIL;
     }
+
+    // 使用软件SHA256算法计算MAC值
+    memset (sha2_input, 0, 88);
+    memcpy (sha2_input, key0, 32);
+    memcpy (sha2_input + 32, Tempkey, 32);
+    memcpy (sha2_input + 64, mac_bytes, 24);
+    status = atcac_sw_sha2_256 (sha2_input, 88, mac_sw);
+    if (status == ATCA_SUCCESS)
+        atcab_printbin_label ("\nSHA256 SW Digest:  \n", mac_sw, 32);
+    else {
+        printf ("Get SW Mac Fail\n");
+        return ATCA_FUNC_FAIL;
+    }
+
+    // 比较硬件和软件的结果是否一致，如果一致则证明外部的SHA204A是真正授权的
+    if (memcmp (mac_sw, digest, 32) == 0) {
+        printf ("CheckMac PASS\n");
+        //return ATCA_SUCCESS;
+    }
+
+    //将HMAC结果计算出MD5的值
+    MD5_Init (&md5_ctx);
+    MD5_Update (&md5_ctx, digest, 32);
+    MD5_Final (md5_result, &md5_ctx);
+    atcab_printbin_label ("\nMD5 Digest:  \n", md5_result, 16);
+
+    // 用户Counter加1，再写回到ATSHA204中
+    counter = user_counter[0] << 24 | user_counter[1] << 16 | user_counter[2] << 8 | user_counter[3];
+    counter += 1;
+    user_counter[0] = (counter >> 24) & 0xFF;
+    user_counter[1] = (counter >> 16) & 0xFF;
+    user_counter[2] = (counter >> 8) & 0xFF;
+    user_counter[3] = counter & 0xFF;
+
+    memset (Tempkey, 0, 32);
+    memcpy (Tempkey, user_counter, 4);
+    status = atcab_write_bytes_zone (ATCA_ZONE_DATA, 2, 0, Tempkey, 32);
+    CHECK_STATUS (status);
+
+    return ATCA_SUCCESS;
 }
 
 // *****************************************************************************
@@ -349,7 +407,7 @@ void APP_Tasks ( void )
 
                     if (is_locked) {
                         printf ("Data Zone is locked!\r\n");
-                        appData.state = APP_STATE_NONCE;
+                        appData.state = APP_STATE_GET_DIGEST;
                     } else {
                         printf ("Data Zone is un-locked!\r\n");
                         appData.state = APP_STATE_WRITE_DATA_ZONE;
@@ -381,16 +439,24 @@ void APP_Tasks ( void )
                     atcab_printbin_label ("\nRandom Number:  \n", random, 32);
                     status = sha204_checkmac (random);
                     if (status == ATCA_SUCCESS)
-                        printf ("\nCheckMac Success\n");
+                        printf ("CheckMac Success\n");
                     else
-                        printf ("\nCheckMac Fail\n");
+                        printf ("CheckMac Fail\n");
 
-                    sha204_get_digest();
-
-                    appData.state = APP_STATE_DETECT_BUTTON;
+                    appData.state = APP_STATE_GET_DIGEST;
                 } else {
                     printf ("\nRandom Number Fail\n");
                 }
+                break;
+            }
+
+            case APP_STATE_GET_DIGEST: {
+                status = sha204_get_digest();
+                if (status == ATCA_SUCCESS)
+                    printf ("Get Digest Success\n");
+                else
+                    printf ("Get Digest Fail\n");
+                appData.state = APP_STATE_DETECT_BUTTON;
                 break;
             }
 
