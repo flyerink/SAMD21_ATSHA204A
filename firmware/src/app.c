@@ -60,7 +60,6 @@
 */
 
 APP_DATA appData;
-ATCADevice atca_device;
 SYS_TIME_HANDLE timer_led, timer_tick;
 
 extern ATCAIfaceCfg atsha204a_0_init_data;
@@ -84,7 +83,7 @@ extern ATCAIfaceCfg atsha204a_0_init_data;
 */
 
 // 写入SHA204A的配置区数据，写入成功后需要把配置区锁定
-ATCA_STATUS sha204_write_config (ATCADevice device, uint8_t addr)
+ATCA_STATUS sha204_write_config (uint8_t addr)
 {
     ATCA_STATUS status = ATCA_SUCCESS;
     uint8_t data[88];
@@ -92,21 +91,21 @@ ATCA_STATUS sha204_write_config (ATCADevice device, uint8_t addr)
     //generated C HEX from javascript config tool
     const uint8_t sha204_config_lab[] = {
         0x01, 0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00, 0xEE, 0x00, 0x69, 0x00,
-        addr, 0x00, 0x55, 0x00, 0x80, 0x80, 0x90, 0x80,  0x8F, 0x8F, 0x8F, 0x42, 0x8F, 0x0F, 0xC2, 0x8F,
-        0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F,  0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F,
-        0x0F, 0x0F, 0x9F, 0x8F, 0xFF, 0xFF, 0xFF, 0xFF,  0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
-        0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x55, 0x55
+        addr, 0x00, 0x55, 0x00, 0x80, 0x80, 0x00, 0x81,  0x02, 0x00, 0xA3, 0x60, 0x94, 0x40, 0xA0, 0x85,
+        0x86, 0x40, 0x87, 0x07, 0x0F, 0x00, 0x89, 0xF2,  0x8A, 0x7A, 0x0B, 0x8B, 0x0C, 0x4C, 0xDD, 0x4D,
+        0xC2, 0x42, 0xAF, 0x8F, 0xFF, 0x00, 0xFF, 0x00,  0xFF, 0x00, 0x7F, 0x00, 0xFF, 0x00, 0x7F, 0x00,
+        0xFF, 0x00, 0xFF, 0x00, 0x7F, 0xFF, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x55, 0x55,
     };
 
-    status = calib_read_config_zone (device, (uint8_t *)&data);
+    status = atcab_read_config_zone ((uint8_t *)&data);
     CHECK_STATUS (status);
     atcab_printbin_label ("Device Config Read:  \n", data, 88);
 
-    status = calib_write_config_zone (device, sha204_config_lab);
+    status = atcab_write_config_zone (sha204_config_lab);
     CHECK_STATUS (status);
 
-    status = calib_lock_config_zone (device);
+    status = atcab_lock_config_zone ();
     CHECK_STATUS (status);
 
     printf ("Write Complete\r\n");
@@ -119,6 +118,8 @@ const uint8_t key0[32] = {
     0xd9, 0x01, 0x01, 0x01, 0x00, 0x66, 0x6c, 0x6f, 0x77, 0x76, 0x69, 0x61, 0x63, 0x68, 0x61, 0x6e,
     0x67, 0x72, 0x75, 0x69, 0x6b, 0x65, 0x6a, 0x69, 0x77, 0x77, 0x77, 0x77, 0xab, 0xbc, 0xcd, 0xde,
 };
+
+uint32_t counter = 0;
 
 // 用户的自定义随机种子，用于通过Nonce生成随机数
 const uint8_t nonce_in[20] = {
@@ -135,19 +136,37 @@ const uint8_t mac_bytes[24] = {
 
 // 写入数据到SHA204A数据区，比如用户的密码
 // 写入数据后，需要把数据区锁定才能使用验证的功能
-ATCA_STATUS sha204_write_data (ATCADevice device)
+ATCA_STATUS sha204_write_data (void)
 {
+    uint8_t user_data[32];
+
+    // 用户的序列号，前8个字节有效
+    const uint8_t user_sn[32] = {
+        0x00, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
     ATCA_STATUS status = ATCA_GEN_FAIL;
 
     printf ("--Write Data Zone--\r\n");
 
-    status = calib_write_bytes_zone (device, ATCA_ZONE_DATA, 0, 0, key0, 32);
+    // SecureKey, Salt
+    status = atcab_write_bytes_zone (ATCA_ZONE_DATA, 0, 0, key0, 32);
+    CHECK_STATUS (status);
+
+    // User's SN
+    status = atcab_write_bytes_zone (ATCA_ZONE_DATA, 1, 0, user_sn, 32);
+    CHECK_STATUS (status);
+
+    // User's Counter, writable & readable; start with 0
+    memset (user_data, 0, 32);
+    status = atcab_write_bytes_zone (ATCA_ZONE_DATA, 2, 0, user_data, 32);
     CHECK_STATUS (status);
 
     printf ("Write Complete\r\n");
 
     printf ("Locking Data Zone\r\n");
-    status = calib_lock_data_zone (device);
+    status = atcab_lock_data_zone ();
     CHECK_STATUS (status);
 
     printf ("Complete\r\n");
@@ -164,7 +183,7 @@ ATCA_STATUS sha204_checkmac (uint8_t *challenge)
     uint8_t mac_sw[32];
 
     // 获取器件的MAC值，使用Slot0的Key
-    status = calib_mac (atca_device, 0x01, 0x00, NULL, digest);
+    status = atcab_mac (0x01, 0x00, NULL, digest);
     if (status == ATCA_SUCCESS)
         atcab_printbin_label ("\nDigest:  \n", digest, 32);
     else {
@@ -201,6 +220,33 @@ ATCA_STATUS sha204_checkmac (uint8_t *challenge)
     }
 
     return ATCA_FUNC_FAIL;
+}
+
+ATCA_STATUS sha204_get_digest (void)
+{
+    ATCA_STATUS status = ATCA_GEN_FAIL;
+    uint8_t digest[32];
+    uint8_t Tempkey[32];
+    uint8_t user_sn[8];
+    uint8_t user_counter[4];
+
+    status = atcab_read_bytes_zone (ATCA_ZONE_DATA, 1, 0, Tempkey, 32);
+    CHECK_STATUS (status);
+    memcpy (user_sn, Tempkey, 8);
+    atcab_printbin_label ("\nUser SN:  \n", user_sn, 8);
+
+    status = atcab_read_bytes_zone (ATCA_ZONE_DATA, 2, 0, Tempkey, 32);
+    CHECK_STATUS (status);
+    memcpy (user_counter, Tempkey, 4);
+    atcab_printbin_label ("\nUser Counter:  \n", user_counter, 4);
+
+    memset (Tempkey, 0, 32);
+    memcpy (Tempkey, user_sn, 8);
+    memcpy (Tempkey + 8, user_counter, 4);
+    status = atcab_nonce_base (0x03, 0x00, Tempkey, NULL);
+    if (status == ATCA_SUCCESS) {
+        atcab_printbin_label ("\nNonce:  \n", digest, 32);
+    }
 }
 
 // *****************************************************************************
@@ -258,16 +304,16 @@ void APP_Tasks ( void )
                 printf ("\nInitial CryptoAuthLib:\n");
 
                 // Inititalize CryptoAuthLib
-                status = atcab_init_ext (&atca_device, &atsha204a_0_init_data);
+                status = atcab_init (&atsha204a_0_init_data);
                 if (status != ATCA_SUCCESS) {
                     printf ("\tFail\n");
                     break;
                 }
 
-                if (atcab_get_device_type_ext (atca_device) == ATSHA204A) {
+                if (atcab_get_device_type () == ATSHA204A) {
                     uint8_t revision[9];
 
-                    status = calib_read_serial_number (atca_device, revision);
+                    status = atcab_read_serial_number (revision);
                     if (status != ATCA_SUCCESS) {
                         printf ("Device Serial Number: Fail\n");
                         break;
@@ -288,14 +334,14 @@ void APP_Tasks ( void )
 
             case APP_STATE_CHECK_LOCK_STATUS: {
                 bool is_locked;
-                status = calib_is_locked (atca_device, LOCK_ZONE_CONFIG, &is_locked);
+                status = atcab_is_locked (LOCK_ZONE_CONFIG, &is_locked);
                 if (status != ATCA_SUCCESS) {
                     printf ("Device lock status: Fail\n");
                     break;
                 }
                 if (is_locked) {
                     printf ("Config Zone is locked!\r\n");
-                    status = calib_is_locked (atca_device, LOCK_ZONE_DATA, &is_locked);
+                    status = atcab_is_locked (LOCK_ZONE_DATA, &is_locked);
                     if (status != ATCA_SUCCESS) {
                         printf ("Device lock status: Fail\n");
                         break;
@@ -317,20 +363,20 @@ void APP_Tasks ( void )
 
             case APP_STATE_WRITE_CONFIG_ZONE: {
                 printf ("Write Config Zone\n");
-                sha204_write_config (atca_device, 0xC8);
+                sha204_write_config (0xC8);
                 appData.state = APP_STATE_WRITE_DATA_ZONE;
                 break;
             }
 
             case APP_STATE_WRITE_DATA_ZONE: {
-                sha204_write_data (atca_device);
+                sha204_write_data ();
                 appData.state = APP_STATE_NONCE;
                 break;
             }
 
             case APP_STATE_NONCE: {
                 uint8_t random[32];
-                status = calib_nonce_base (atca_device, 0x01, 0x00, nonce_in, random);
+                status = atcab_nonce_base (0x01, 0x00, nonce_in, random);
                 if (status == ATCA_SUCCESS) {
                     atcab_printbin_label ("\nRandom Number:  \n", random, 32);
                     status = sha204_checkmac (random);
@@ -338,6 +384,9 @@ void APP_Tasks ( void )
                         printf ("\nCheckMac Success\n");
                     else
                         printf ("\nCheckMac Fail\n");
+
+                    sha204_get_digest();
+
                     appData.state = APP_STATE_DETECT_BUTTON;
                 } else {
                     printf ("\nRandom Number Fail\n");
