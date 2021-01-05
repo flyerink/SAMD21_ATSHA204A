@@ -266,7 +266,7 @@ ATCA_STATUS sha204_get_digest (void)
         return ATCA_FUNC_FAIL;
     }
 
-    // 使用软件SHA256算法计算MAC值
+    // 使用软件SHA256算法计算MAC值，用于在服务器端验证用户的密码是否正确
     memset (sha2_input, 0, 88);
     memcpy (sha2_input, key0, 32);
     memcpy (sha2_input + 32, Tempkey, 32);
@@ -279,13 +279,13 @@ ATCA_STATUS sha204_get_digest (void)
         return ATCA_FUNC_FAIL;
     }
 
-    // 比较硬件和软件的结果是否一致，如果一致则证明外部的SHA204A是真正授权的
+    // 比较硬件和软件的结果是否一致，如果一致则证明外部的SHA204A计算出的Digest是正确的
     if (memcmp (mac_sw, digest, 32) == 0) {
         printf ("CheckMac PASS\n");
         //return ATCA_SUCCESS;
     }
 
-    //将HMAC结果计算出MD5的值
+    // 用MAC Digest结果计算出MD5的值
     MD5_Init (&md5_ctx);
     MD5_Update (&md5_ctx, digest, 32);
     MD5_Final (md5_result, &md5_ctx);
