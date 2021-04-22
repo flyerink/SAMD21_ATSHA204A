@@ -62,15 +62,19 @@
 // *****************************************************************************
 
 
-/*** LED Macros for LED ***/
-#define LED_Toggle()     (PORT_REGS->GROUP[1].PORT_OUTTGL = 1 << 30)
-#define LED_On()         (PORT_REGS->GROUP[1].PORT_OUTCLR = 1 << 30)
-#define LED_Off()        (PORT_REGS->GROUP[1].PORT_OUTSET = 1 << 30)
+/*** LED Macros for BSP_LED_BLUE ***/
+#define BSP_LED_BLUE_Toggle()     (PORT_REGS->GROUP[0].PORT_OUTTGL = 1 << 2)
+#define BSP_LED_BLUE_On()         (PORT_REGS->GROUP[0].PORT_OUTCLR = 1 << 2)
+#define BSP_LED_BLUE_Off()        (PORT_REGS->GROUP[0].PORT_OUTSET = 1 << 2)
+/*** LED Macros for BSP_LED_RED ***/
+#define BSP_LED_RED_Toggle()     (PORT_REGS->GROUP[0].PORT_OUTTGL = 1 << 3)
+#define BSP_LED_RED_On()         (PORT_REGS->GROUP[0].PORT_OUTCLR = 1 << 3)
+#define BSP_LED_RED_Off()        (PORT_REGS->GROUP[0].PORT_OUTSET = 1 << 3)
 
-/*** SWITCH Macros for SWITCH ***/
-#define SWITCH_Get()     ((PORT_REGS->GROUP[0].PORT_IN >> 15) & 0x01)
-#define SWITCH_STATE_PRESSED   0
-#define SWITCH_STATE_RELEASED  1
+/*** SWITCH Macros for BSP_SWITCH ***/
+#define BSP_SWITCH_Get()     ((PORT_REGS->GROUP[0].PORT_IN >> 15) & 0x01)
+#define BSP_SWITCH_STATE_PRESSED   0
+#define BSP_SWITCH_STATE_RELEASED  1
 
 
 

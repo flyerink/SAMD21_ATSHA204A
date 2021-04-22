@@ -49,6 +49,12 @@ children:
   - type: Long
     attributes: {id: TC_TIMER_PERIOD}
     children:
+    - type: Attributes
+      children:
+      - type: Long
+        attributes: {id: max}
+        children:
+        - {type: Value, value: '65535'}
     - type: Values
       children:
       - type: Dynamic
@@ -69,4 +75,4 @@ children:
         children:
         - {type: Value, value: sys_time_TMR_dependency}
 - type: ElementPosition
-  attributes: {x: '495', y: '237', id: tc3}
+  attributes: {x: '492', y: '237', id: tc3}

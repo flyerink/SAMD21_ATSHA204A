@@ -54,7 +54,7 @@
 // Section: Configuration Bits
 // ****************************************************************************
 // ****************************************************************************
-#pragma config NVMCTRL_BOOTPROT = SIZE_0BYTES
+#pragma config NVMCTRL_BOOTPROT = SIZE_8192BYTES
 #pragma config NVMCTRL_EEPROM_SIZE = SIZE_0BYTES
 #pragma config BOD33USERLEVEL = 0x7 // Enter Hexadecimal value
 #pragma config BOD33_EN = ENABLED
@@ -202,11 +202,11 @@ void SYS_Initialize ( void* data )
 
     SERCOM2_I2C_Initialize();
 
+	BSP_Initialize();
     EVSYS_Initialize();
 
     TC3_TimerInitialize();
 
-	BSP_Initialize();
 
 
     sysObj.sysDebug = SYS_DEBUG_Initialize(SYS_DEBUG_INDEX_0, (SYS_MODULE_INIT*)&debugInit);

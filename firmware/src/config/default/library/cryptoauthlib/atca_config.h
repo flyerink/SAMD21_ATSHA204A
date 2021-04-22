@@ -5,13 +5,16 @@
 /* MPLAB Harmony Common Include */
 #include "definitions.h"
 
-
 #ifndef ATCA_HAL_I2C
 #define ATCA_HAL_I2C
 #endif
 
+
+
 /** Include Device Support Options */
 #define ATCA_ATSHA204A_SUPPORT
+
+
 
 
 /* Polling Configuration Options  */
@@ -47,7 +50,6 @@
 #endif
 
 /* Define generic interfaces to the processor libraries */
-
 #define PLIB_I2C_ERROR          SERCOM_I2C_ERROR
 #define PLIB_I2C_ERROR_NONE     SERCOM_I2C_ERROR_NONE
 #define PLIB_I2C_TRANSFER_SETUP SERCOM_I2C_TRANSFER_SETUP
@@ -66,6 +68,9 @@ typedef struct atca_plib_api
     atca_i2c_error_get              error_get;
     atca_i2c_plib_transfer_setup    transfer_setup;
 } atca_plib_i2c_api_t;
+
+
+
 
 extern atca_plib_i2c_api_t sercom2_plib_i2c_api;
 

@@ -8,11 +8,10 @@
 
 #include "cryptoauthlib.h"
 
-
 ATCAIfaceCfg atsha204a_0_init_data = {
     .iface_type            = ATCA_I2C_IFACE,
     .devtype               = ATSHA204A,
-    .atcai2c.slave_address = 0xC8,
+    .atcai2c.address       = 0xC8,
     .atcai2c.bus           = 0,
     .atcai2c.baud          = 400000,
     .wake_delay            = 1500,

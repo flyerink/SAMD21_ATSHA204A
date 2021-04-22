@@ -100,4 +100,4 @@ children:
       - type: Dynamic
         attributes: {id: HarmonyCore, value: 'true'}
 - type: ElementPosition
-  attributes: {x: '596', y: '91', id: HarmonyCore}
+  attributes: {x: '461', y: '62', id: HarmonyCore}
