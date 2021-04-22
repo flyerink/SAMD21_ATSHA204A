@@ -410,8 +410,6 @@ void APP_Tasks ( void )
                         break;
                     }
                     atcab_printbin_label ("Device Serial Number:  ", revision, 9);
-                    // BSP_LED_BLUE_On();
-                    // BSP_LED_RED_Off();
                     appData.state = APP_STATE_CHECK_LOCK_STATUS;
                 }
                 break;
@@ -437,15 +435,14 @@ void APP_Tasks ( void )
 
                     if (is_locked) {
                         printf ("Data Zone is locked!\n\n");
-                        //appData.state = APP_STATE_GET_DIGEST;
                         appData.state = APP_STATE_NONCE;
                     } else {
                         printf ("Data Zone is un-locked!\r\n");
-                        appData.state = APP_STATE_WRITE_DATA_ZONE;
+                        appData.state = APP_STATE_DETECT_BUTTON;
                     }
                 } else {
                     printf ("Config Zone is un-locked!\r\n");
-                    appData.state = APP_STATE_WRITE_CONFIG_ZONE;
+                    appData.state = APP_STATE_DETECT_BUTTON;
                 }
                 break;
             }
@@ -465,7 +462,6 @@ void APP_Tasks ( void )
             }
 
             case APP_STATE_NONCE: {
-                uint8_t slot;
                 uint8_t otp_read[64];
 
                 printf ("Read OTP Zone: ");
@@ -482,19 +478,9 @@ void APP_Tasks ( void )
                     break;
                 }
 
-                if (memcmp (otp_read, otp_data, 64) == 0) {
-                    printf ("OTP Data Matched\r\n");
-                    status = ATCA_SUCCESS;
-                    for (slot = 0; slot < 8; slot ++) {
-                        status += sha204_checkmac (slot);
-                    }
-                    status += sha204_checkmac (14);
-                    status += sha204_checkmac (15);
-                } else {
-                    printf ("OTP Data Compare Fail\r\n");
-                    status = -1;
-                }
+                printf ("OTP Data: %s\n\n", otp_read);
 
+                status = sha204_checkmac (0);
                 if (status == ATCA_SUCCESS) {
                     BSP_LED_BLUE_On();
                     BSP_LED_RED_Off();
