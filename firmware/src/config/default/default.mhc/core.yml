@@ -320,14 +320,14 @@ children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: 'false'}
+        attributes: {id: core, value: 'true'}
   - type: Integer
     attributes: {id: GCLK_ID_6_FREQ}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: '0'}
+        attributes: {id: core, value: '48000000'}
   - type: Integer
     attributes: {id: GCLK_IO_0_FREQ}
     children:
@@ -481,21 +481,21 @@ children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: 'false'}
+        attributes: {id: core, value: 'true'}
   - type: String
     attributes: {id: NVIC_7_0_HANDLER}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: USB_Handler}
+        attributes: {id: core, value: DRV_USBFSV1_USB_Handler}
   - type: Boolean
     attributes: {id: NVIC_7_0_HANDLER_LOCK}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: 'false'}
+        attributes: {id: core, value: 'true'}
   - type: Boolean
     attributes: {id: NVIC_9_0_ENABLE}
     children:
@@ -706,6 +706,48 @@ children:
       children:
       - type: User
         attributes: {value: C}
+  - type: String
+    attributes: {id: PIN_23_FUNCTION_TYPE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: USB_DM}
+  - type: String
+    attributes: {id: PIN_23_MODE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: ''}
+  - type: String
+    attributes: {id: PIN_23_PERIPHERAL_FUNCTION}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: G}
+  - type: String
+    attributes: {id: PIN_24_FUNCTION_TYPE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: USB_DP}
+  - type: String
+    attributes: {id: PIN_24_MODE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: ''}
+  - type: String
+    attributes: {id: PIN_24_PERIPHERAL_FUNCTION}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: G}
   - type: String
     attributes: {id: PIN_32_DIR}
     children:
@@ -1029,6 +1071,20 @@ children:
       - type: Dynamic
         attributes: {id: core, value: PA23}
   - type: String
+    attributes: {id: PORT_GROUP_0_PAD_24}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: PA24}
+  - type: String
+    attributes: {id: PORT_GROUP_0_PAD_25}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: PA25}
+  - type: String
     attributes: {id: PORT_GROUP_0_PAD_3}
     children:
     - type: Values
@@ -1113,6 +1169,20 @@ children:
       - type: Dynamic
         attributes: {id: core, value: '0x1'}
   - type: String
+    attributes: {id: PORT_GROUP_0_PINCFG24}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0x1'}
+  - type: String
+    attributes: {id: PORT_GROUP_0_PINCFG25}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0x1'}
+  - type: String
     attributes: {id: PORT_GROUP_0_PINCFG3}
     children:
     - type: Values
@@ -1168,6 +1238,13 @@ children:
       children:
       - type: Dynamic
         attributes: {id: core, value: '0x22'}
+  - type: String
+    attributes: {id: PORT_GROUP_0_PMUX12}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0x66'}
   - type: String
     attributes: {id: PORT_GROUP_0_PMUX15}
     children:
@@ -1378,20 +1455,48 @@ children:
       children:
       - type: Dynamic
         attributes: {id: tc3, value: 'true'}
+  - type: Boolean
+    attributes: {id: USB_CLOCK_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: drv_usbfs_v1, value: 'true'}
   - type: Integer
     attributes: {id: USB_CLOCK_FREQUENCY}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: '0'}
+        attributes: {id: core, value: '48000000'}
+  - type: Boolean
+    attributes: {id: USB_INTERRUPT_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: drv_usbfs_v1, value: 'true'}
   - type: Boolean
     attributes: {id: USB_INTERRUPT_ENABLE_UPDATE}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: core, value: 'true'}
+        attributes: {id: core, value: 'false'}
+  - type: String
+    attributes: {id: USB_INTERRUPT_HANDLER}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: drv_usbfs_v1, value: DRV_USBFSV1_USB_Handler}
+  - type: Boolean
+    attributes: {id: USB_INTERRUPT_HANDLER_LOCK}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: drv_usbfs_v1, value: 'true'}
   - type: Setting
     attributes: {id: XC32_HEAP}
     children:

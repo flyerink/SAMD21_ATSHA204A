@@ -319,6 +319,177 @@ ATCA_STATUS sha204_checkmac (uint8_t slot)
     return ATCA_FUNC_FAIL;
 }
 
+#if 0
+/*******************************************************
+ * USB CDC Device Events - Application Event Handler
+ *******************************************************/
+USB_DEVICE_CDC_EVENT_RESPONSE APP_USBDeviceCDCEventHandler ( USB_DEVICE_CDC_INDEX index,
+        USB_DEVICE_CDC_EVENT event,
+        void *pData,
+        uintptr_t userData )
+{
+    USB_DEVICE_CDC_EVENT_DATA_READ_COMPLETE *eventDataRead;
+    USB_CDC_CONTROL_LINE_STATE *controlLineStateData;
+    APP_DATA *appDataObject = (APP_DATA *)userData;
+
+    switch ( event ) {
+        case USB_DEVICE_CDC_EVENT_GET_LINE_CODING:
+            /* This means the host wants to know the current line
+             * coding. This is a control transfer request. Use the
+             * USB_DEVICE_ControlSend() function to send the data to
+             * host.  */
+
+            USB_DEVICE_ControlSend (appDataObject->usbDevHandle,
+                                    &appDataObject->getLineCodingData, sizeof (USB_CDC_LINE_CODING));
+            break;
+
+        case USB_DEVICE_CDC_EVENT_SET_LINE_CODING:
+            /* This means the host wants to set the line coding.
+             * This is a control transfer request. Use the
+             * USB_DEVICE_ControlReceive() function to receive the
+             * data from the host */
+            appDataObject->isSetLineCodingCommandInProgress = true;
+            appDataObject->isBaudrateDataReceived = false;
+            USB_DEVICE_ControlReceive (appDataObject->usbDevHandle,
+                                       &appDataObject->setLineCodingData, sizeof (USB_CDC_LINE_CODING));
+            break;
+
+        case USB_DEVICE_CDC_EVENT_SET_CONTROL_LINE_STATE:
+            /* This means the host is setting the control line state.
+             * Read the control line state. We will accept this request
+             * for now. */
+            controlLineStateData = (USB_CDC_CONTROL_LINE_STATE *)pData;
+            appDataObject->controlLineStateData.dtr = controlLineStateData->dtr;
+            appDataObject->controlLineStateData.carrier = controlLineStateData->carrier;
+
+            USB_DEVICE_ControlStatus (appDataObject->usbDevHandle, USB_DEVICE_CONTROL_STATUS_OK);
+            break;
+
+        case USB_DEVICE_CDC_EVENT_SEND_BREAK:
+            /* This means that the host is requesting that a break of the
+             * specified duration be sent. Read the break duration */
+            appDataObject->breakData = ((USB_DEVICE_CDC_EVENT_DATA_SEND_BREAK *) pData)->breakDuration;
+
+            /* Complete the control transfer by sending a ZLP  */
+            USB_DEVICE_ControlStatus (appDataObject->usbDevHandle, USB_DEVICE_CONTROL_STATUS_OK);
+            break;
+
+        case USB_DEVICE_CDC_EVENT_READ_COMPLETE:
+            /* This means that the host has sent some data*/
+            eventDataRead = (USB_DEVICE_CDC_EVENT_DATA_READ_COMPLETE *)pData;
+
+            appDataObject->isCDCReadInProgress = false;
+            BSP_LED_RED_On();
+
+            if (eventDataRead->status != USB_DEVICE_CDC_RESULT_ERROR) {
+                appDataObject->readLength = eventDataRead->length;
+            }
+            break;
+
+        case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_DATA_RECEIVED:
+            /* The data stage of the last control transfer is
+             * complete. */
+            if (appDataObject->isSetLineCodingCommandInProgress == true) {
+                /* We have received set line coding command from the Host.
+                 * DRV_USART_BaudSet() function is not interrupt safe and it
+                 * should not be called here. It is called in APP_Tasks()
+                 * function. The ACK for Status stage of the control transfer is
+                 * send in the APP_Tasks() function.  */
+                appDataObject->isSetLineCodingCommandInProgress = false;
+                appDataObject->isBaudrateDataReceived = true;
+            } else {
+                /* ACK the Status stage of the Control transfer */
+                USB_DEVICE_ControlStatus (appDataObject->usbDevHandle, USB_DEVICE_CONTROL_STATUS_OK);
+            }
+            break;
+
+        case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_DATA_SENT:
+            /* This means the GET LINE CODING function data is valid. We don't
+             * do much with this data in this demo. */
+            break;
+
+        case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_ABORTED:
+            /* The control transfer has been aborted */
+            if (appDataObject->isSetLineCodingCommandInProgress == true) {
+                appDataObject->isSetLineCodingCommandInProgress = false;
+                appDataObject->isBaudrateDataReceived = false;
+            }
+            break;
+
+        case USB_DEVICE_CDC_EVENT_WRITE_COMPLETE:
+            /* This means that the data write got completed. We can schedule
+             * the next read. */
+            appDataObject->isCDCWriteInProgress = false;
+            BSP_LED_RED_Off();
+            break;
+
+        default:
+            break;
+    }
+
+    return USB_DEVICE_CDC_EVENT_RESPONSE_NONE;
+}
+#endif
+
+/*********************************************
+ * Application USB Device Layer Event Handler
+ *********************************************/
+
+void APP_USBDeviceEventHandler (USB_DEVICE_EVENT event, void *eventData, uintptr_t context)
+{
+    uint8_t configurationValue;
+    switch (event) {
+        case USB_DEVICE_EVENT_RESET:
+        case USB_DEVICE_EVENT_DECONFIGURED:
+            /* USB device is reset or device is deconfigured.
+             * This means that USB device layer is about to deininitialize
+             * all function drivers. Update LEDs to indicate
+             * reset/deconfigured state. */
+            appData.deviceIsConfigured = false;
+            break;
+
+        case USB_DEVICE_EVENT_CONFIGURED:
+            /* Check the configuration */
+            configurationValue = ((USB_DEVICE_EVENT_DATA_CONFIGURED *)eventData)->configurationValue;
+            if (configurationValue == 1) {
+                /* The device is in configured state. Update LED indication */
+
+                /* Register the CDC Device application event handler here.
+                 * Note how the appData object pointer is passed as the
+                 * user data */
+
+                // USB_DEVICE_CDC_EventHandlerSet (USB_DEVICE_CDC_INDEX_0, APP_USBDeviceCDCEventHandler, (uintptr_t)&appData);
+
+                /* mark that set configuration is complete */
+                appData.deviceIsConfigured = true;
+            }
+            break;
+
+        case USB_DEVICE_EVENT_SUSPENDED:
+            /* Update LEDs */
+            break;
+
+        case USB_DEVICE_EVENT_POWER_DETECTED:
+            /* VBUS is detected. Attach the device */
+            USB_DEVICE_Attach (appData.usbDevHandle);
+            break;
+
+        case USB_DEVICE_EVENT_POWER_REMOVED:
+            /* VBUS is removed. Detach the device */
+            USB_DEVICE_Detach (appData.usbDevHandle);
+            appData.deviceIsConfigured = false;
+
+            LED_Off();
+            break;
+
+        /* These events are not used in this demo. */
+        case USB_DEVICE_EVENT_RESUMED:
+        case USB_DEVICE_EVENT_ERROR:
+        default:
+            break;
+    }
+}
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Application Initialization and State Machine Functions
@@ -338,14 +509,20 @@ void APP_Initialize ( void )
     /* Place the App state machine in its initial state. */
     appData.state = APP_STATE_INIT;
 
-    /* TODO: Initialize your application's state machine and other
-     * parameters.
-     */
+    /* Device Layer Handle  */
+    appData.usbDevHandle = USB_DEVICE_HANDLE_INVALID;
+
+    /* device configured status */
+    appData.deviceIsConfigured = false;
+
     timer_led = SYS_TIME_HANDLE_INVALID;
     SYS_TIME_DelayMS (1000, &timer_led);
 
     timer_tick = SYS_TIME_HANDLE_INVALID;
     SYS_TIME_DelayMS (1, &timer_tick);
+
+    BSP_LED_BLUE_Off();
+    BSP_LED_RED_Off();
 }
 
 
@@ -367,144 +544,153 @@ void APP_Tasks ( void )
     }
 
     if (SYS_TIME_DelayIsComplete (timer_tick)) {
-        /* Check the application's current state. */
-        switch ( appData.state ) {
-            /* Application's initial state. */
-            case APP_STATE_INIT: {
-                printf ("\nInitial CryptoAuthLib:\n");
+        SYS_TIME_DelayMS (1, &timer_tick);
+    }
 
-                // Inititalize CryptoAuthLib
-                status = atcab_init (&atsha204a_0_init_data);
+    /* Check the application's current state. */
+    switch ( appData.state ) {
+        /* Application's initial state. */
+        case APP_STATE_INIT: {
+            printf ("\nInitial CryptoAuthLib:\n");
+            SYS_DEBUG_PRINT (SYS_ERROR_INFO, "SenseTime Crypto Tester\r\n\n");
+
+            // Inititalize CryptoAuthLib
+            status = atcab_init (&atsha204a_0_init_data);
+            if (status != ATCA_SUCCESS) {
+                printf ("\tFail\n");
+                BSP_LED_BLUE_Off();
+                BSP_LED_RED_On();
+                break;
+            }
+            BSP_LED_BLUE_On();
+            appData.state = APP_STATE_DETECT_BUTTON;
+            break;
+        }
+
+        case APP_STATE_DETECT_BUTTON: {
+            if (BSP_SWITCH_Get() == BSP_SWITCH_STATE_PRESSED) {
+                appData.state = APP_STATE_DETECT_DEVICE;
+                BSP_LED_BLUE_Off();
+                BSP_LED_RED_Off();
+                BSP_STATUS_OK_Clear();
+                BSP_STATUS_FAIL_Clear();
+                while (BSP_SWITCH_Get() == BSP_SWITCH_STATE_PRESSED);
+            }
+            break;
+        }
+
+        case APP_STATE_DETECT_DEVICE:
+            if (atcab_get_device_type () == ATSHA204A) {
+                uint8_t sn[9];
+                uint8_t str_out[128];
+                uint8_t index;
+
+                status = atcab_read_serial_number (sn);
                 if (status != ATCA_SUCCESS) {
-                    printf ("\tFail\n");
                     BSP_LED_BLUE_Off();
                     BSP_LED_RED_On();
+                    printf ("Device Serial Number: Fail\n");
                     break;
                 }
-                BSP_LED_BLUE_On();
-                appData.state = APP_STATE_DETECT_BUTTON;
+                atcab_printbin_label ("Device Serial Number:  ", sn, 9);
+                SYS_DEBUG_PRINT (SYS_ERROR_INFO, "Device Serial Number: %02X %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+                                 sn[0], sn[1], sn[2], sn[3], sn[4], sn[5], sn[6], sn[7], sn[8]);
+
+                appData.state = APP_STATE_CHECK_LOCK_STATUS;
+            }
+            break;
+
+        case APP_STATE_CHECK_LOCK_STATUS: {
+            bool is_locked;
+            status = atcab_is_locked (LOCK_ZONE_CONFIG, &is_locked);
+            if (status != ATCA_SUCCESS) {
+                BSP_LED_BLUE_Off();
+                BSP_LED_RED_On();
+                printf ("Device lock status: Fail\n");
                 break;
             }
-
-            case APP_STATE_DETECT_BUTTON: {
-                if (BSP_SWITCH_Get() == BSP_SWITCH_STATE_PRESSED) {
-                    appData.state = APP_STATE_DETECT_DEVICE;
-                    BSP_LED_BLUE_Off();
-                    BSP_LED_RED_Off();
-                    BSP_STATUS_OK_Clear();
-                    BSP_STATUS_FAIL_Clear();
-                    while (BSP_SWITCH_Get() == BSP_SWITCH_STATE_PRESSED);
-                }
-                break;
-            }
-
-            case APP_STATE_DETECT_DEVICE:
-                if (atcab_get_device_type () == ATSHA204A) {
-                    uint8_t revision[9];
-
-                    status = atcab_read_serial_number (revision);
-                    if (status != ATCA_SUCCESS) {
-                        BSP_LED_BLUE_Off();
-                        BSP_LED_RED_On();
-                        printf ("Device Serial Number: Fail\n");
-                        break;
-                    }
-                    atcab_printbin_label ("Device Serial Number:  ", revision, 9);
-                    appData.state = APP_STATE_CHECK_LOCK_STATUS;
-                }
-                break;
-
-            case APP_STATE_CHECK_LOCK_STATUS: {
-                bool is_locked;
-                status = atcab_is_locked (LOCK_ZONE_CONFIG, &is_locked);
+            if (is_locked) {
+                printf ("Config Zone is locked!\r\n");
+                status = atcab_is_locked (LOCK_ZONE_DATA, &is_locked);
                 if (status != ATCA_SUCCESS) {
                     BSP_LED_BLUE_Off();
                     BSP_LED_RED_On();
                     printf ("Device lock status: Fail\n");
                     break;
                 }
+
                 if (is_locked) {
-                    printf ("Config Zone is locked!\r\n");
-                    status = atcab_is_locked (LOCK_ZONE_DATA, &is_locked);
-                    if (status != ATCA_SUCCESS) {
-                        BSP_LED_BLUE_Off();
-                        BSP_LED_RED_On();
-                        printf ("Device lock status: Fail\n");
-                        break;
-                    }
-
-                    if (is_locked) {
-                        printf ("Data Zone is locked!\n\n");
-                        appData.state = APP_STATE_NONCE;
-                    } else {
-                        printf ("Data Zone is un-locked!\r\n");
-                        appData.state = APP_STATE_DETECT_BUTTON;
-                    }
-                } else {
-                    printf ("Config Zone is un-locked!\r\n");
-                    appData.state = APP_STATE_DETECT_BUTTON;
-                }
-                break;
-            }
-
-            case APP_STATE_WRITE_CONFIG_ZONE: {
-                if (sha204_write_config () == ATCA_SUCCESS) {
-                    appData.state = APP_STATE_WRITE_DATA_ZONE;
-                }
-                break;
-            }
-
-            case APP_STATE_WRITE_DATA_ZONE: {
-                if (sha204_write_data () == ATCA_SUCCESS) {
+                    printf ("Data Zone is locked!\n\n");
                     appData.state = APP_STATE_NONCE;
-                }
-                break;
-            }
-
-            case APP_STATE_NONCE: {
-                uint8_t otp_read[64];
-
-                printf ("Read OTP Zone: ");
-                status = atcab_read_bytes_zone (ATCA_ZONE_OTP, 0, 0, otp_read, 32);
-                status += atcab_read_bytes_zone (ATCA_ZONE_OTP, 0, 32, &otp_read[32], 32);
-                if (status == ATCA_SUCCESS) {
-                    printf ("Completed\r\n");
                 } else {
-                    BSP_LED_BLUE_Off();
-                    BSP_LED_RED_On();
-                    BSP_STATUS_OK_Clear();
-                    BSP_STATUS_FAIL_Set();
+                    printf ("Data Zone is un-locked!\r\n");
                     appData.state = APP_STATE_DETECT_BUTTON;
-                    break;
                 }
+            } else {
+                printf ("Config Zone is un-locked!\r\n");
+                appData.state = APP_STATE_DETECT_BUTTON;
+            }
+            break;
+        }
 
-                printf ("OTP Data: %s\n\n", otp_read);
+        case APP_STATE_WRITE_CONFIG_ZONE: {
+            if (sha204_write_config () == ATCA_SUCCESS) {
+                appData.state = APP_STATE_WRITE_DATA_ZONE;
+            }
+            break;
+        }
 
-                status = sha204_checkmac (0);
-                if (status == ATCA_SUCCESS) {
-                    BSP_LED_BLUE_On();
-                    BSP_LED_RED_Off();
-                    BSP_STATUS_OK_Set();
-                    BSP_STATUS_FAIL_Clear();
-                    printf ("CheckMac Success\n\n");
-                } else {
-                    BSP_LED_BLUE_Off();
-                    BSP_LED_RED_On();
-                    BSP_STATUS_OK_Clear();
-                    BSP_STATUS_FAIL_Set();
-                    printf ("Test Fail\n\n");
-                }
+        case APP_STATE_WRITE_DATA_ZONE: {
+            if (sha204_write_data () == ATCA_SUCCESS) {
+                appData.state = APP_STATE_NONCE;
+            }
+            break;
+        }
+
+        case APP_STATE_NONCE: {
+            uint8_t otp_read[64];
+            printf ("Read OTP Zone: ");
+            status = atcab_read_bytes_zone (ATCA_ZONE_OTP, 0, 0, otp_read, 32);
+            status += atcab_read_bytes_zone (ATCA_ZONE_OTP, 0, 32, &otp_read[32], 32);
+            if (status == ATCA_SUCCESS) {
+                printf ("Completed\r\n");
+            } else {
+                BSP_LED_BLUE_Off();
+                BSP_LED_RED_On();
+                BSP_STATUS_OK_Clear();
+                BSP_STATUS_FAIL_Set();
                 appData.state = APP_STATE_DETECT_BUTTON;
                 break;
             }
 
-            /* The default state should never be executed. */
-            default: {
-                /* TODO: Handle error in application's state machine. */
-                break;
+            printf ("\nOTP Data: %s\n\n", otp_read);
+            SYS_DEBUG_PRINT (SYS_ERROR_INFO, "OTP Data: %s\r\n", otp_read);
+
+            status = sha204_checkmac (0);
+            if (status == ATCA_SUCCESS) {
+                BSP_LED_BLUE_On();
+                BSP_LED_RED_Off();
+                BSP_STATUS_OK_Set();
+                BSP_STATUS_FAIL_Clear();
+                printf ("CheckMac Success\n\n");
+                SYS_DEBUG_PRINT (SYS_ERROR_INFO, "Test Pass\r\n\n");
+            } else {
+                BSP_LED_BLUE_Off();
+                BSP_LED_RED_On();
+                BSP_STATUS_OK_Clear();
+                BSP_STATUS_FAIL_Set();
+                printf ("Test Fail\n\n");
+                SYS_DEBUG_PRINT (SYS_ERROR_INFO, "Test Fail\r\n\n");
             }
+            appData.state = APP_STATE_DETECT_BUTTON;
+            break;
         }
-        SYS_TIME_DelayMS (1, &timer_tick);
+
+        /* The default state should never be executed. */
+        default: {
+            /* TODO: Handle error in application's state machine. */
+            break;
+        }
     }
 }
 

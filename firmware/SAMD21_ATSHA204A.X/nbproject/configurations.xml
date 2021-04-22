@@ -10,6 +10,17 @@
             <itemPath>../src/config/default/bsp/bsp.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f5" displayName="driver" projectFiles="true">
+            <logicalFolder name="f1" displayName="usb" projectFiles="true">
+              <logicalFolder name="f1" displayName="usbfsv1" projectFiles="true">
+                <logicalFolder name="f1" displayName="src" projectFiles="true">
+                  <itemPath>../src/config/default/driver/usb/usbfsv1/src/drv_usbfsv1_variant_mapping.h</itemPath>
+                  <itemPath>../src/config/default/driver/usb/usbfsv1/src/drv_usbfsv1_local.h</itemPath>
+                </logicalFolder>
+                <itemPath>../src/config/default/driver/usb/usbfsv1/drv_usbfsv1.h</itemPath>
+              </logicalFolder>
+              <itemPath>../src/config/default/driver/usb/drv_usb.h</itemPath>
+              <itemPath>../src/config/default/driver/usb/drv_usb_external_dependencies.h</itemPath>
+            </logicalFolder>
             <itemPath>../src/config/default/driver/driver.h</itemPath>
             <itemPath>../src/config/default/driver/driver_common.h</itemPath>
           </logicalFolder>
@@ -73,6 +84,24 @@
             <itemPath>../src/config/default/system/system.h</itemPath>
             <itemPath>../src/config/default/system/system_common.h</itemPath>
             <itemPath>../src/config/default/system/system_module.h</itemPath>
+          </logicalFolder>
+          <logicalFolder name="f7" displayName="usb" projectFiles="true">
+            <logicalFolder name="f1" displayName="src" projectFiles="true">
+              <itemPath>../src/config/default/usb/src/usb_device_local.h</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_device_mapping.h</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_device_function_driver.h</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_external_dependencies.h</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_device_cdc_local.h</itemPath>
+            </logicalFolder>
+            <itemPath>../src/config/default/usb/usb_device.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_common.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_chapter_9.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_host_client_driver.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_host_hub_interface.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_host.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_hub.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_device_cdc.h</itemPath>
+            <itemPath>../src/config/default/usb/usb_cdc.h</itemPath>
           </logicalFolder>
           <itemPath>../src/config/default/device_cache.h</itemPath>
           <itemPath>../src/config/default/toolchain_specifics.h</itemPath>
@@ -191,6 +220,16 @@
         <logicalFolder name="f1" displayName="default" projectFiles="true">
           <logicalFolder name="f5" displayName="bsp" projectFiles="true">
             <itemPath>../src/config/default/bsp/bsp.c</itemPath>
+          </logicalFolder>
+          <logicalFolder name="f7" displayName="driver" projectFiles="true">
+            <logicalFolder name="f1" displayName="usb" projectFiles="true">
+              <logicalFolder name="f1" displayName="usbfsv1" projectFiles="true">
+                <logicalFolder name="f1" displayName="src" projectFiles="true">
+                  <itemPath>../src/config/default/driver/usb/usbfsv1/src/drv_usbfsv1.c</itemPath>
+                  <itemPath>../src/config/default/driver/usb/usbfsv1/src/drv_usbfsv1_device.c</itemPath>
+                </logicalFolder>
+              </logicalFolder>
+            </logicalFolder>
           </logicalFolder>
           <logicalFolder name="f3" displayName="library" projectFiles="true">
             <logicalFolder name="f1" displayName="cryptoauthlib" projectFiles="true">
@@ -341,9 +380,9 @@
             <logicalFolder name="f2" displayName="console" projectFiles="true">
               <itemPath>../src/config/default/system/console/src/sys_console.c</itemPath>
               <itemPath>../src/config/default/system/console/src/sys_console_local.h</itemPath>
-              <itemPath>../src/config/default/system/console/src/sys_console_uart.h</itemPath>
-              <itemPath>../src/config/default/system/console/src/sys_console_uart_definitions.h</itemPath>
-              <itemPath>../src/config/default/system/console/src/sys_console_uart.c</itemPath>
+              <itemPath>../src/config/default/system/console/src/sys_console_usb_cdc.h</itemPath>
+              <itemPath>../src/config/default/system/console/src/sys_console_usb_cdc_definitions.h</itemPath>
+              <itemPath>../src/config/default/system/console/src/sys_console_usb_cdc.c</itemPath>
             </logicalFolder>
             <logicalFolder name="f1" displayName="debug" projectFiles="true">
               <itemPath>../src/config/default/system/debug/src/sys_debug_local.h</itemPath>
@@ -356,12 +395,20 @@
               <itemPath>../src/config/default/system/time/src/sys_time.c</itemPath>
             </logicalFolder>
           </logicalFolder>
+          <logicalFolder name="f6" displayName="usb" projectFiles="true">
+            <logicalFolder name="f1" displayName="src" projectFiles="true">
+              <itemPath>../src/config/default/usb/src/usb_device.c</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_device_cdc.c</itemPath>
+              <itemPath>../src/config/default/usb/src/usb_device_cdc_acm.c</itemPath>
+            </logicalFolder>
+          </logicalFolder>
           <itemPath>../src/config/default/initialization.c</itemPath>
           <itemPath>../src/config/default/interrupts.c</itemPath>
           <itemPath>../src/config/default/exceptions.c</itemPath>
           <itemPath>../src/config/default/startup_xc32.c</itemPath>
           <itemPath>../src/config/default/libc_syscalls.c</itemPath>
           <itemPath>../src/config/default/tasks.c</itemPath>
+          <itemPath>../src/config/default/usb_device_init_data.c</itemPath>
         </logicalFolder>
       </logicalFolder>
       <itemPath>../src/main.c</itemPath>
@@ -378,6 +425,7 @@
         <itemPath>../src/config/default/default.mhc/core.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/cryptoauthlib.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/dfp.yml</itemPath>
+        <itemPath>../src/config/default/default.mhc/drv_usbfs_v1.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/evsys.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/HarmonyCore.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/nvmctrl.yml</itemPath>
@@ -387,6 +435,8 @@
         <itemPath>../src/config/default/default.mhc/sys_debug.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/sys_time.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/tc3.yml</itemPath>
+        <itemPath>../src/config/default/default.mhc/usb_device.yml</itemPath>
+        <itemPath>../src/config/default/default.mhc/usb_device_cdc.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/GraphSettings.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/settings.yml</itemPath>
         <itemPath>../src/config/default/default.mhc/project.yml</itemPath>

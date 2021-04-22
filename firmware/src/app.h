@@ -87,13 +87,18 @@ typedef enum {
     Application strings and buffers are be defined outside this structure.
  */
 
-typedef struct
-{
+typedef struct {
     /* The application's current state */
     APP_STATES state;
 
-    /* TODO: Define any additional data used by the application. */
-    //ATCADevice device;
+    /* Device layer handle returned by device layer open function */
+    USB_DEVICE_HANDLE usbDevHandle;
+
+    /* Application CDC Instance */
+    USB_DEVICE_CDC_INDEX cdcInstance;
+
+    /* Track device configuration */
+    bool deviceIsConfigured;
 
 } APP_DATA;
 
@@ -175,7 +180,7 @@ void APP_Initialize ( void );
     This routine must be called from SYS_Tasks() routine.
  */
 
-void APP_Tasks( void );
+void APP_Tasks ( void );
 
 //DOM-IGNORE-BEGIN
 #ifdef __cplusplus

@@ -59,6 +59,7 @@
 void Reset_Handler (void);
 void NonMaskableInt_Handler (void);
 void HardFault_Handler (void);
+void DRV_USBFSV1_USB_Handler (void);
 void SERCOM2_I2C_InterruptHandler (void);
 void SERCOM3_USART_InterruptHandler (void);
 void TC3_TimerInterruptHandler (void);

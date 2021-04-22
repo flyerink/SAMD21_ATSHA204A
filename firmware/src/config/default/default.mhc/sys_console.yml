@@ -10,14 +10,14 @@ children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: sys_console, value: '1'}
+        attributes: {id: sys_console, value: '0'}
   - type: Integer
     attributes: {id: SYS_CONSOLE_USB_CONNECTION_COUNTER}
     children:
     - type: Values
       children:
       - type: Dynamic
-        attributes: {id: sys_console, value: '0'}
+        attributes: {id: sys_console, value: '1'}
   - type: Integer
     attributes: {id: SYS_CONSOLE_USB_READ_WRITE_BUFFER_SIZE}
     children:
@@ -40,14 +40,14 @@ children:
           - type: Boolean
             attributes: {id: visible}
             children:
-            - {type: Value, value: 'true'}
+            - {type: Value, value: 'false'}
       - type: String
         attributes: {id: SYS_CONSOLE_DEVICE}
         children:
         - type: Values
           children:
           - type: Dynamic
-            attributes: {id: sys_console_0, value: SERCOM3}
+            attributes: {id: sys_console_0, value: USB_DEVICE_CDC_0}
       - type: Integer
         attributes: {id: SYS_CONSOLE_DEVICE_INDEX}
         children:
@@ -61,7 +61,7 @@ children:
         - type: Values
           children:
           - type: Dynamic
-            attributes: {id: sys_console_0, value: UART}
+            attributes: {id: sys_console_0, value: USB_CDC}
       - type: Integer
         attributes: {id: SYS_CONSOLE_DEVICE_UART_INDEX}
         children:
@@ -84,7 +84,7 @@ children:
           - type: Boolean
             attributes: {id: visible}
             children:
-            - {type: Value, value: 'false'}
+            - {type: Value, value: 'true'}
       - type: Integer
         attributes: {id: SYS_CONSOLE_TX_BUFFER_SIZE}
         children:
@@ -93,7 +93,7 @@ children:
           - type: Boolean
             attributes: {id: visible}
             children:
-            - {type: Value, value: 'false'}
+            - {type: Value, value: 'true'}
       - type: File
         attributes: {id: SYS_CONSOLE_UART_DEFINITIONS_HEADER}
         children:
@@ -102,7 +102,7 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'true'}
+            - {type: Value, value: 'false'}
       - type: File
         attributes: {id: SYS_CONSOLE_UART_HEADER}
         children:
@@ -111,7 +111,7 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'true'}
+            - {type: Value, value: 'false'}
       - type: File
         attributes: {id: SYS_CONSOLE_UART_SOURCE}
         children:
@@ -120,7 +120,7 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'true'}
+            - {type: Value, value: 'false'}
       - type: File
         attributes: {id: SYS_CONSOLE_USB_CDC_SOURCE}
         children:
@@ -129,7 +129,7 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'false'}
+            - {type: Value, value: 'true'}
       - type: File
         attributes: {id: SYS_CONSOLE_USB_DEFINITIONS_HEADER}
         children:
@@ -138,7 +138,7 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'false'}
+            - {type: Value, value: 'true'}
       - type: String
         attributes: {id: SYS_CONSOLE_USB_DEVICE_SPEED}
         children:
@@ -154,21 +154,21 @@ children:
           - type: Boolean
             attributes: {id: enabled}
             children:
-            - {type: Value, value: 'false'}
+            - {type: Value, value: 'true'}
     - type: Attachments
       children:
       - type: DirectDependency
-        attributes: {id: sys_console_UART_dependency}
+        attributes: {id: sys_console_USB_DEVICE_CDC_dependency}
         children:
         - type: Attributes
           children:
           - type: String
             attributes: {id: targetComponentID}
             children:
-            - {type: Value, value: sercom3}
+            - {type: Value, value: usb_device_cdc_0}
           - type: String
             attributes: {id: targetAttachmentID}
             children:
-            - {type: Value, value: SERCOM3_UART}
+            - {type: Value, value: USB Device}
 - type: ElementPosition
-  attributes: {x: '176', y: '271', id: sys_console}
+  attributes: {x: '185', y: '319', id: sys_console}

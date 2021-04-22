@@ -4,7 +4,7 @@
 
 
 project: SAMD21_ATSHA204A
-creation_date: 2021-04-22T15:09:48.767+08:00[Asia/Shanghai]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
+creation_date: 2021-04-22T17:07:49.353+08:00[Asia/Shanghai]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
 operating_system: Windows 10
 mhc_mode: IDE            # [IDE|Standalone|Headless]
 mhc_version: v3.7.1
@@ -17,5 +17,6 @@ modules:
     - {name: "csp", version: "v3.9.0"}
     - {name: "core", version: "v3.9.0"}
     - {name: "dev_packs", version: "v3.9.0"}
+    - {name: "usb", version: "v3.7.1"}
     - {name: "bsp", version: "v3.9.0"}
 
